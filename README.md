@@ -28,8 +28,8 @@ discussed previously, ensure that appropriate statistics are displayed.
 # Issues
 There are some issues in the output file. some entries may not be in the proper order, or may seem to "overlap" in time even with a queue size of 1, but this is false. Each proccess follows the termination of the last in this case.
 # VERSION CONTROL:
-
-==============================================================================Commits on Oct,27 2020=============================================================================
+```
+===========================================Commits on Oct,27 2020=============================================================================
 -Added expired queues and finshing touches
 
 @BrandonLondon
@@ -161,3 +161,4 @@ Inital commit, created files
 
 Brandon London
 Brandon London committed 8 days ago
+```
