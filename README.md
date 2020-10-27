@@ -8,13 +8,15 @@ ignoring almost every other aspect of the OS. Please use message queues for sync
 Execute oss with no parameters. You may add some parameters to modify the number of processes or base quantum but if you do so,
 document this in your README.
 # How to Run
+```
 $ make
 $ ./oss [options]
-
+```
 # Options
+```
 -h -> show help menu
 -n -> how many children should exist at any given time. Max 19
-
+```
 # Output
 output.log
 
