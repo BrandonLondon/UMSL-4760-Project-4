@@ -286,6 +286,7 @@ void swapActiveAndExpired()
 	expired = tmp;
 }
 
+
 /* The biggest and fattest function west of the missisipi */
 void DoSharedWork()
 {
@@ -342,8 +343,8 @@ void DoSharedWork()
 
 		pid_t pid; //pid temp
 		int usertracker = -1; //updated by userready to the position of ready struct to be launched
-
-		/* Only executes when there is a proccess ready to be launched, given the time is right for exec, there is room in the proc table, annd there are execs remaining */
+//here
+		
 		if (remainingExecs > 0 && activeProcs < childCount && (data->sysTime.seconds >= nextExec.seconds) && (data->sysTime.ns >= nextExec.ns)) 
 		{
 			pid = fork(); //the mircle of proccess creation
@@ -359,11 +360,9 @@ void DoSharedWork()
 			{
 				DoFork(pid); //do the fork thing with exec followup
 			}
-
 			/* Setup the next exec for proccess*/
 			nextExec.seconds = data->sysTime.seconds; //capture current time
 			nextExec.ns = data->sysTime.ns;
-
 			int secstoadd = abs(rand() % (MAX_TIME_BETWEEN_NEW_PROCS_SEC + 1)); //add additional time to current time to setup the next attempted exec
 			int nstoadd = abs((rand() * rand()) % (MAX_TIME_BETWEEN_NEW_PROCS_NS + 1));
 			AddTimeSpec(&nextExec, secstoadd, nstoadd);
@@ -387,29 +386,29 @@ void DoSharedWork()
 
 				data->proc[pos].loc_pid = ++locpidcnt; //increment localpid counter and assign a new lcaolpid to the child
 
-				/* Logic for determining what queue to initially place the new child after it is generated depending on its priority value*/
-				if (data->proc[pos].realtime == 1) 
-				{
-					data->proc[pos].queueID = 0; //if realtime
-					enqueue(active[0], data->proc[pos].loc_pid);
-					fprintf(o, "%s: [%i:%i] [PROC CREATE] [PID: %i] LOC_PID: %i INTO QUEUE: 0\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[pos].pid, data->proc[pos].loc_pid);
+			/* Logic for determining what queue to initially place the new child after it is generated depending on its priority value*/
+			if (data->proc[pos].realtime == 1) 
+			{
+				data->proc[pos].queueID = 0; //if realtime
+				enqueue(active[0], data->proc[pos].loc_pid);
+				fprintf(o, "%s: [%i:%i] [PROC CREATE] [PID: %i] LOC_PID: %i INTO QUEUE: 0\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[pos].pid, data->proc[pos].loc_pid);
 
-				}
-				else
-				{
-					data->proc[pos].queueID = 1; //if user
-					enqueue(active[1], data->proc[pos].loc_pid);
-					fprintf(o, "%s: [%i:%i] [PROC CREATE] [PID: %i] LOC_PID: %i INTO QUEUE: 1\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[pos].pid, data->proc[pos].loc_pid);
-				}
+			}	
+			else
+			{
+				data->proc[pos].queueID = 1; //if user
+				enqueue(active[1], data->proc[pos].loc_pid);
+				fprintf(o, "%s: [%i:%i] [PROC CREATE] [PID: %i] LOC_PID: %i INTO QUEUE: 1\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[pos].pid, data->proc[pos].loc_pid);
+			}	
 
-				activeProcs++; //increment active execs
+			activeProcs++; //increment active execs
 			}
 			else
 			{
 				kill(pid, SIGTERM); //if child failed to find a proccess block, just kill it off
+			
 			}
 		}
-
 		/*If there is a proccess currently running, we should check if it sends a message in the queue */
 		if (procRunning == 1)
 		{
@@ -420,6 +419,7 @@ void DoSharedWork()
 					msgrcv(toMasterQueue, &msgbuf, sizeof(msgbuf), data->proc[activeProcIndex].pid, 0); //After we recieve signal that child used term, wait for the child to send its percentage
 
 					int i;
+					//CONVERTING PERCENTAGE
 					sscanf(msgbuf.mtext, "%i", &i); //convert from string to int
 					int cost;
 
@@ -466,7 +466,7 @@ void DoSharedWork()
 
 					procRunning = 0; //proccess is no longer running
 				}
-				else if (strcmp(msgbuf.mtext, "USED_ALL") == 0) //child decides to use all time
+				else if (strcmp(msgbuf.mtext, "EXPIRED") == 0) //child decides to use all time
 				{
 					switch (data->proc[activeProcIndex].queueID) //depending on what queue it was in, we must increment a different amount of time, this is the logic for that.
 					{

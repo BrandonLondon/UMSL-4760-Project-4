@@ -187,7 +187,7 @@ int main(int argc, int argv)
 		if ((rand() % 100) <= CHANCE_TO_USE_ALL_TIME_PERCENT) //roll to use all time and send result to parent if using all
 		{
 			msgbuf.mtype = pid;
-			strcpy(msgbuf.mtext, "USED_ALL");
+			strcpy(msgbuf.mtext, "EXPIRED");
 			msgsnd(toMasterQueue, &msgbuf, sizeof(msgbuf), 0); //send used all signal to parent
 		}
 		else
