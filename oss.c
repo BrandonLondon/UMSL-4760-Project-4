@@ -479,27 +479,69 @@ void DoSharedWork()
 						AddTime(&(data->proc[activeProcIndex].tCpuTime), queueCost0);
 						break;
 					case 1:
-						enqueue(active[1], data->proc[FindPID(msgbuf.mtype)].loc_pid); //requeue the proccess into the next level of queue since it used all of its time
-						data->proc[FindPID(msgbuf.mtype)].queueID = 2;
-						fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 1 -> 2] [PID: %i] LOC_PID: %i AFTER FULL %iNS\n\n", filen, 
-							data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, queueCost1);
+						
+						if(&(data->proc[activeProcIndex].tCpuTime) >= queueCost1)
+						{
+							enqueue(expired[2], data->proc[FindPID(msgbuf.mtype)].loc_pid);
+						
+							data->proc[FindPID(msgbuf.mtype)].queueID = 2;
+							fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 1 -> EXPIRED 2] [PID: %i] LOC_PID: %i AFTER FULL %iNS\n\n", filen,
+								data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, queueCost2);
+							AddTime(&(data->sysTime), queueCost2);  //statistics tracking and then increment system clock by the cost
+							AddTime(&(data->proc[activeProcIndex].tCpuTime), queueCost2);
+						}
+						else
+						{
+							enqueue(expired[1], data->proc[FindPID(msgbuf.mtype)].loc_pid);
+						
+							data->proc[FindPID(msgbuf.mtype)].queueID = 1;
+							fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 1 -> EXPIRED 1] [PID: %i] LOC_PID: %i AFTER FULL %iNS\n\n", filen,
+								data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, queueCost1);
+							AddTime(&(data->sysTime), queueCost1);  //statistics tracking and then increment system clock by the cost
+							AddTime(&(data->proc[activeProcIndex].tCpuTime), queueCost1);
+						}
+						//enqueue(active[1], data->proc[FindPID(msgbuf.mtype)].loc_pid); //requeue the proccess into the next level of queue since it used all of its time
+						//data->proc[FindPID(msgbuf.mtype)].queueID = 2;
+						//fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 1 -> 2] [PID: %i] LOC_PID: %i AFTER FULL %iNS\n\n", filen, 
+						//	data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, queueCost1);
 
-						AddTime(&(data->sysTime), queueCost1);  //statistics tracking and then increment system clock by the cost
-						AddTime(&(data->proc[activeProcIndex].tCpuTime), queueCost1);
+						//AddTime(&(data->sysTime), queueCost1);  //statistics tracking and then increment system clock by the cost
+						//AddTime(&(data->proc[activeProcIndex].tCpuTime), queueCost1);
 						break;
 					case 2:
-						enqueue(active[2], data->proc[FindPID(msgbuf.mtype)].loc_pid); //requeue the proccess into the next level of queue since it used all of its time
-						data->proc[FindPID(msgbuf.mtype)].queueID = 3;
-						fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 2 -> 3] [PID: %i] LOC_PID: %i AFTER FULL %iNS\n\n", filen, 
-							data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, queueCost2);
 
-						AddTime(&(data->sysTime), queueCost2);  //statistics tracking and then increment system clock by the cost
-						AddTime(&(data->proc[activeProcIndex].tCpuTime), queueCost2);
+						if(&(data->proc[activeProcIndex].queueID) >= queueCost2)
+						{
+							enqueue(expired[3], data->proc[FindPID(msgbuf.mtype)].loc_pid);
+						
+							data->proc[FindPID(msgbuf.mtype)].queueID = 3;
+							fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 2 -> EXPIRED 3] [PID: %i] LOC_PID: %i AFTER FULL %iNS\n\n", filen,
+								data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, queueCost3);
+							AddTime(&(data->sysTime), queueCost3);  //statistics tracking and then increment system clock by the cost
+							AddTime(&(data->proc[activeProcIndex].tCpuTime), queueCost3);
+						}
+						else
+						{
+							enqueue(expired[2], data->proc[FindPID(msgbuf.mtype)].loc_pid);
+						
+							data->proc[FindPID(msgbuf.mtype)].queueID = 2;
+							fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 2 -> EXPIRED 2] [PID: %i] LOC_PID: %i AFTER FULL %iNS\n\n", filen,
+								data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, queueCost2);
+							AddTime(&(data->sysTime), queueCost2);  //statistics tracking and then increment system clock by the cost
+							AddTime(&(data->proc[activeProcIndex].tCpuTime), queueCost2);
+						}
+						//enqueue(active[2], data->proc[FindPID(msgbuf.mtype)].loc_pid); //requeue the proccess into the next level of queue since it used all of its time
+						//data->proc[FindPID(msgbuf.mtype)].queueID = 3;
+						//fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 2 -> 3] [PID: %i] LOC_PID: %i AFTER FULL %iNS\n\n", filen, 
+						//	data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, queueCost2);
+
+						//AddTime(&(data->sysTime), queueCost2);  //statistics tracking and then increment system clock by the cost
+						//AddTime(&(data->proc[activeProcIndex].tCpuTime), queueCost2);
 						break;
 					case 3:
-						enqueue(active[3], data->proc[FindPID(msgbuf.mtype)].loc_pid); //requeue the proccess into the same queue because there is nowhere else to go
+						enqueue(expired[3], data->proc[FindPID(msgbuf.mtype)].loc_pid); //requeue the proccess into the same queue because there is nowhere else to go
 						data->proc[FindPID(msgbuf.mtype)].queueID = 3;
-						fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 3 -> 3] [PID: %i] LOC_PID: %i AFTER FULL %iNS\n\n", filen, 
+						fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 3 -> EXPIRED 3] [PID: %i] LOC_PID: %i AFTER FULL %iNS\n\n", filen, 
 							data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid);
 
 						AddTime(&(data->sysTime), queueCost3);  //statistics tracking and then increment system clock by the cost
@@ -645,12 +687,18 @@ void DoSharedWork()
 				msgsnd(toChildQueue, &msgbuf, sizeof(msgbuf), IPC_NOWAIT); //wake the child
 			}
 
-			int schedCost = ((rand() % 9900) + 100);
+			int schedCost = ((rand() % 99) + 1) * 100;
 			AddTime(&(data->sysTime), schedCost); //simulate scheduling time
 			fprintf(o, "\t%s: [%i:%i] [SCHEDULER] [PID: %i] LOC_PID: %i COST TO SCHEDULE: %iNS\n", filen, 
 			data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, schedCost);
 
 			procRunning = 1; //signal that there is a proccess running
+		}
+//here
+		
+		if ((isEmpty(active[0]) != 0 || isEmpty(active[1]) != 0 || isEmpty(active[2]) != 0 || isEmpty(active[3]) != 0) && procRunning == 0)
+		{
+			swapActiveAndExpired();
 		}
 
 		if ((pid = waitpid((pid_t)-1, &status, WNOHANG)) > 0) //if a PID is returned meaning the child died
