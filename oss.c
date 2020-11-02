@@ -14,7 +14,7 @@
 #include "shared.h"
 #include "string.h"
 
-
+//Global Variables to hold active and expired queues
 static Queue* *active;
 static Queue* *expired;
 int ipcid; //inter proccess shared memory
@@ -270,6 +270,7 @@ int FindLocPID(int pid)
 	return -1;
 }
 
+//Used to create a number of queues
 void createQueueSet(struct Queue* arr[])
 {
 	int i;//used for how many levels
@@ -278,6 +279,7 @@ void createQueueSet(struct Queue* arr[])
 		arr[i] = createQueue(childCount);	
 	}
 }
+// Used to swap active and expired queues
 void swapActiveAndExpired()
 {	
 	Queue* *tmp;	
@@ -287,7 +289,7 @@ void swapActiveAndExpired()
 }
 
 
-/* The biggest and fattest function west of the missisipi */
+/* MEATY BOI, DOES 90 PERCENT OF THE WORK*/
 void DoSharedWork()
 {
 	/* General sched data */
@@ -324,13 +326,16 @@ void DoSharedWork()
 	Queue* queueBlock = createQueue(childCount);
 	createQueueSet(qset1);
 	createQueueSet(qset2);
+	
+	//Used to keep track of expired and active sets
 	active = qset1;
 	expired = qset2;
-
-	int queueCost0 = QUEUE_BASE_TIME * 1000000;
-	int queueCost1 = QUEUE_BASE_TIME * 2 * 1000000;
-	int queueCost2 = QUEUE_BASE_TIME * 3 * 1000000;
-	int queueCost3 = QUEUE_BASE_TIME * 4 * 1000000;
+	
+	//Create Queue times and cost
+	int queueCost0 = (QUEUE_BASE_TIME) * 1000000;
+	int queueCost1 = (QUEUE_BASE_TIME / 2) * 1000000;
+	int queueCost2 = (QUEUE_BASE_TIME / 3) * 1000000;
+	int queueCost3 = (QUEUE_BASE_TIME / 4) * 1000000;
 
 	/* Message tracking */
 	int pauseSent = 0;
@@ -474,7 +479,7 @@ void DoSharedWork()
 						enqueue(active[0], data->proc[FindPID(msgbuf.mtype)].loc_pid); //requeue the proccess into the same queue since it is realtime
 						data->proc[FindPID(msgbuf.mtype)].queueID = 0;
 						AddTime(&(data->sysTime), queueCost0);  //statistics tracking and then increment system clock by the cost
-						fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 0 -> 0] [PID: %i] LOC_PID: %i\ AFTER FULL %iNS\n\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, queueCost0);
+						fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 0 -> 0] [PID: %i] LOC_PID: %i AFTER FULL %iNS\n", filen, data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, queueCost0);
 
 						AddTime(&(data->proc[activeProcIndex].tCpuTime), queueCost0);
 						break;
@@ -500,17 +505,10 @@ void DoSharedWork()
 							AddTime(&(data->sysTime), queueCost1);  //statistics tracking and then increment system clock by the cost
 							AddTime(&(data->proc[activeProcIndex].tCpuTime), queueCost1);
 						}
-						//enqueue(active[1], data->proc[FindPID(msgbuf.mtype)].loc_pid); //requeue the proccess into the next level of queue since it used all of its time
-						//data->proc[FindPID(msgbuf.mtype)].queueID = 2;
-						//fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 1 -> 2] [PID: %i] LOC_PID: %i AFTER FULL %iNS\n\n", filen, 
-						//	data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, queueCost1);
-
-						//AddTime(&(data->sysTime), queueCost1);  //statistics tracking and then increment system clock by the cost
-						//AddTime(&(data->proc[activeProcIndex].tCpuTime), queueCost1);
 						break;
 					case 2:
 
-						if(&(data->proc[activeProcIndex].queueID) >= queueCost2)
+						if(&(data->proc[activeProcIndex].tCpuTime) >= queueCost2)
 						{
 							enqueue(expired[3], data->proc[FindPID(msgbuf.mtype)].loc_pid);
 						
@@ -530,13 +528,6 @@ void DoSharedWork()
 							AddTime(&(data->sysTime), queueCost2);  //statistics tracking and then increment system clock by the cost
 							AddTime(&(data->proc[activeProcIndex].tCpuTime), queueCost2);
 						}
-						//enqueue(active[2], data->proc[FindPID(msgbuf.mtype)].loc_pid); //requeue the proccess into the next level of queue since it used all of its time
-						//data->proc[FindPID(msgbuf.mtype)].queueID = 3;
-						//fprintf(o, "\t%s: [%i:%i] [QUEUE SHIFT 2 -> 3] [PID: %i] LOC_PID: %i AFTER FULL %iNS\n\n", filen, 
-						//	data->sysTime.seconds, data->sysTime.ns, data->proc[activeProcIndex].pid, data->proc[activeProcIndex].loc_pid, queueCost2);
-
-						//AddTime(&(data->sysTime), queueCost2);  //statistics tracking and then increment system clock by the cost
-						//AddTime(&(data->proc[activeProcIndex].tCpuTime), queueCost2);
 						break;
 					case 3:
 						enqueue(expired[3], data->proc[FindPID(msgbuf.mtype)].loc_pid); //requeue the proccess into the same queue because there is nowhere else to go
@@ -808,7 +799,7 @@ void QueueAttatch()
 }
 
 /* Program entry point */
-int main(int argc, int** argv)
+int main(int argc, char *argv[])
 {
 	//alias for file name
 	filen = argv[0]; //shorthand for filename

@@ -192,7 +192,7 @@ int main(int argc, int argv)
 		}
 		else
 		{
-			if (runningIO == 0) //this was here before I changed back from async. Think of this as a dinosaur now. 
+			if (runningIO == 0)  
 			{
 				/* determine unblock time for the proccess and add it to current time to determine when to stop spinlocking */
 				unblockTime.seconds = data->sysTime.seconds;
